@@ -42,7 +42,6 @@
 
       #control-container {
         position: fixed;
-        overflow: hidden;
         padding: 10px 20px;
         text-align: center;
       }
@@ -256,7 +255,14 @@
       }
 
       /* The container <div> - needed to position the dropdown content */
-      .dropdown-client {
+      .dropdown-industry {
+        margin: auto;
+        position: relative;
+        display: none;
+        text-anchor: middle;
+      }
+
+      .dropdown-innovation {
         margin: auto;
         position: relative;
         display: none;
@@ -270,7 +276,7 @@
         background-color: #f1f1f1;
         min-width: 130px;
         z-index: 1;
-        max-height: 530px;
+        max-height: 330px;
         overflow: auto;
         text-anchor: middle;
       }
@@ -294,16 +300,20 @@
       }
 
       /* Show the dropdown menu on hover */
-      .dropdown-client:hover .dropdown-content {
+      .dropdown-industry:hover .dropdown-content {
         display: block;
       }
 
-      .dropdown-league:hover .dropdown-content {
+      .dropdown-innovation:hover .dropdown-content {
         display: block;
       }
 
       /* Change the background color of the dropdown button when the dropdown content is shown */
-      .dropdown-client:hover .dropbtn {
+      .dropdown-industry:hover .dropbtn {
+        background-color: #247DC5;
+      }
+
+      .dropdown-innovation:hover .dropbtn {
         background-color: #247DC5;
       }
 
@@ -1472,11 +1482,17 @@
             <div>
 
 
-          <div class="dropdown-client">
+          <div class="dropdown-industry">
             <button class="dropbtn">
-                Select Client Served  <i class="arrow down"></i>
+                Select Industry  <i class="arrow down"></i>
               </button>
-              <div class="dropdown-content" id="client-selector"></div>
+              <div class="dropdown-content" id="industry-selector"></div>
+          </div>
+          <div class="dropdown-innovation">
+            <button class="dropbtn">
+                Select Innovation  <i class="arrow down"></i>
+              </button>
+              <div class="dropdown-content" id="innovation-selector"></div>
           </div>
           <div id="save-button-container">
             <button class="switch-button" id="save-button">Save Image</button>
@@ -1510,7 +1526,9 @@
           filterKey = "",
           clientFilter = "All Startups",
           geoFilter = "All Startups",
-          filters = {type: "All Startups", geotype: "All Startups"}
+          industryFilter = "All Startups",
+          innovationFilter = "All Startups",
+          filters = {type: "All Startups", geotype: "All Startups", industry: "All Startups", innovation: "All Statups"}
           logoPath = "assets/logo2.png",
           titleLogoWidth = 80,
           titleLogoHeight = 50,
@@ -1621,8 +1639,8 @@
 
           d3.select("#chart-container").style("left", ((146)) + "px")
           const svg_left = (d3.select("#chart-container").style("left"))
-          d3.select("#key-container").style("left", 146 + svg_width + "px").style("top", (window.innerHeight/2 - 60) + "px")
-          d3.select("#control-container").style("left", 146 + svg_width + "px").style("top", (window.innerHeight/2 + 80) + "px")
+          d3.select("#key-container").style("left", 146 + svg_width + "px").style("top", (window.innerHeight/2 - 160) + "px")
+          d3.select("#control-container").style("left", 146 + svg_width + "px").style("top", (window.innerHeight/2 - 40) + "px")
           d3.select("#opp-space-tooltip-container").style("left", (146 + svg_width + 160) + "px").style("top", ((window.innerHeight/2 - 60)) + "px")
   
         var chartSVG = svg
@@ -1743,7 +1761,8 @@
               spinner.stop();
               d3.select("#button-16").style("display", "block")
               //d3.select("#button-17").style("display", "block")
-              //d3.select(".dropdown-client").style("display", "inline-block")
+              d3.select(".dropdown-industry").style("display", "inline-block")
+              d3.select(".dropdown-innovation").style("display", "inline-block")
               d3.select("#save-button").style("display", "block")
               d3.select(".chart-title").style("display", "")
               chartLogo.style("display", "block")
@@ -2845,18 +2864,6 @@
               .entries(data);
 
   
-            var count_by_client = d3
-              .nest()
-              .key(function(d) {
-                return d["Client Served"];
-              })
-              .sortKeys(d3.ascending)
-              .rollup(function(v) {
-                return v.length;
-              })
-              .entries(data);
-
-  
             var count_by_year = d3
               .nest()
               .key(function(d) {
@@ -2868,31 +2875,8 @@
               })
               .entries(data);
 
-              clientList = [
-              "All Startups"
-            ];
 
-            count_by_client.forEach(function(v) {
-              if (v.key != "") {
-                clientList.push(v.key)
-              }
-            })
-  
-            var clientSelector = d3
-              .select("#client-selector")
-              .selectAll("a")
-              .data(clientList)
-              .enter()
-              .append("text")
-              .html(function(d) {
-                return "<a href='#'>" + d + "</a>";
-              })
-              .on("click", function(d) {
-                filters.type = d
-                update_opacity();
-                clientFilter = d;
-                d3.select(".dropdown-client").select(".dropbtn").html(d + " <i class='arrow down'> <\/i>")
-              });
+
 
             // Bar Chart:
             barChartList = ["Amount of Funding", "Founded Year", "Maturity"]
@@ -3983,8 +3967,80 @@
               .text("Funding Key:")
               .attr("y", -110)
               .attr("x", -60);
-  
 
+            /*
+              Drop Down
+            */
+
+            var count_by_industry = d3.nest()
+              .key(function(v) {
+                return v['Industry']
+              })
+              .sortKeys(function(a, b) {
+                return d3.ascending(a, b)
+              })
+              .entries(data)
+
+            var industryList = [
+              "All Startups"
+            ];
+
+            count_by_industry.forEach(function(v) {
+              if (v.key != "") {
+                industryList.push(v.key)
+              }
+            })
+  
+            var industrySelector = d3
+              .select("#industry-selector")
+              .selectAll("a")
+              .data(industryList)
+              .enter()
+              .append("text")
+              .html(function(d) {
+                return "<a href='#'>" + d + "</a>";
+              })
+              .on("click", function(d) {
+                filters.industry = d
+                update_opacity();
+                industryFilter = d;
+                d3.select(".dropdown-industry").select(".dropbtn").html(d + " <i class='arrow down'> <\/i>")
+              });
+
+            var count_by_innovation = d3.nest()
+              .key(function(v) {
+                return v['Type of Innovation']
+              })
+              .sortKeys(function(a, b) {
+                return d3.ascending(a, b)
+              })
+              .entries(data)
+
+            var innovationList = [
+              "All Startups"
+            ];
+
+            count_by_innovation.forEach(function(v) {
+              if (v.key != "") {
+                innovationList.push(v.key)
+              }
+            })
+  
+            var innovationSelector = d3
+              .select("#innovation-selector")
+              .selectAll("a")
+              .data(innovationList)
+              .enter()
+              .append("text")
+              .html(function(d) {
+                return "<a href='#'>" + d + "</a>";
+              })
+              .on("click", function(d) {
+                filters.innovation = d
+                update_opacity();
+                innovationFilter = d;
+                d3.select(".dropdown-innovation").select(".dropbtn").html(d + " <i class='arrow down'> <\/i>")
+              });
 
   
   
@@ -4449,6 +4505,8 @@
 
               type = filters.type
               geotype = filters.geotype
+              industryType = filters.industry
+              innovationType = filters.innovation
   
               nodes
                 .transition()
@@ -4456,7 +4514,8 @@
                 .attrTween("r", function(d) {
                   var startR = d3.select(this).attr("r");
                   if (
-                    (d["Client Served"] === type || type === "All Startups") &&
+                    (d["Industry"] === industryType || industryType === "All Startups") &&
+                    (d["Type of Innovation"] === innovationType || innovationType === "All Startups") &&
                     d["Funding Round"] !== "Acquired" &&
                     d.hide === false &&
                     (d["Global"] === geotype || geotype === "All Startups")
@@ -4471,41 +4530,6 @@
                   };
                 });
   
-              nodes_activity
-                .transition()
-                .duration(animationDuration * 0.7)
-                .attrTween("points", function(d) {
-                  var currentPoints = d3.select(this).attr("points");
-                  var pList = currentPoints.split(",");
-                  var startPoints = [
-                    [+pList[0], +pList[1]],
-                    [+pList[2], +pList[3]],
-                    [+pList[4], +pList[5]]
-                  ];
-  
-                  if (
-                    d["Activity/Acquisition Time"] != "" &&
-                    CompetitorMode === 1 &&
-                    (d["Client Served"] === type || type === "All Startups") &&
-                    (d["Global"] === geotype || geotype === "All Startups")
-                  ) {
-                    var endPoints = [
-                      [d.yearX, d.yearY - 4.7],
-                      [d.yearX - 4.2, d.yearY + 3.7],
-                      [d.yearX + 4.2, d.yearY + 3.7]
-                    ];
-                  } else {
-                    var endPoints = [
-                      [d.yearX, d.yearY],
-                      [d.yearX, d.yearY],
-                      [d.yearX, d.yearY]
-                    ];
-                  }
-                  var i = d3.interpolateArray(startPoints, endPoints);
-                  return function(t) {
-                    return i(t);
-                  };
-                });
   
               nodes_acquired
                 .transition()
@@ -4513,7 +4537,8 @@
                 .attrTween("width", function(d) {
                   var startWidth = d3.select(this).attr("width");
                   if (
-                    (d["Client Served"] === type || type === "All Startups") &&
+                    (d["Industry"] == industryType || industryType == "All Startups") &&
+                    (d["Type of Innovation"] === innovationType || innovationType === "All Startups") &&
                     d["Funding Round"] === "Acquired" &&
                     d.hide === false &&
                     (d["Global"] === geotype || geotype === "All Startups")
@@ -4530,7 +4555,8 @@
                 .attrTween("height", function(d) {
                   var startHeight = d3.select(this).attr("height");
                   if (
-                    (d["Client Served"] === type || type === "All Startups") &&
+                    (d["Industry"] == industryType || industryType == "All Startups") &&
+                    (d["Type of Innovation"] === innovationType || innovationType === "All Startups") &&
                     d["Funding Round"] === "Acquired" &&
                     d.hide === false &&
                     (d["Global"] === geotype || geotype === "All Startups")
@@ -4547,7 +4573,8 @@
                 .attrTween("y", function(d) {
                   var startY = d3.select(this).attr("y");
                   if (
-                    (d["Client Served"] === type || type === "All Startups") &&
+                    (d["Industry"] === industryType || industryType === "All Startups") &&
+                    (d["Type of Innovation"] === innovationType || innovationType === "All Startups") &&
                     d["Funding Round"] === "Acquired" &&
                     d.hide === false &&
                     (d["Global"] === geotype || geotype === "All Startups")
