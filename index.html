@@ -1619,11 +1619,11 @@
 
           
 
-          d3.select("#chart-container").style("left", ((146 + 160 + 200)) + "px")
+          d3.select("#chart-container").style("left", ((146)) + "px")
           const svg_left = (d3.select("#chart-container").style("left"))
-          d3.select("#key-container").style("left", 146 + "px").style("top", (window.innerHeight/2 - 60) + "px")
-          d3.select("#control-container").style("left", 146 + "px").style("top", (window.innerHeight/2 + 80) + "px")
-          d3.select("#opp-space-tooltip-container").style("left", (146 + 160) + "px").style("top", ((window.innerHeight/2 - 60)) + "px")
+          d3.select("#key-container").style("left", 146 + svg_width + "px").style("top", (window.innerHeight/2 - 60) + "px")
+          d3.select("#control-container").style("left", 146 + svg_width + "px").style("top", (window.innerHeight/2 + 80) + "px")
+          d3.select("#opp-space-tooltip-container").style("left", (146 + svg_width + 160) + "px").style("top", ((window.innerHeight/2 - 60)) + "px")
   
         var chartSVG = svg
           .append("g")
@@ -1670,6 +1670,7 @@
           .style("display", "none")
 
           const Field = "Circular Value Chain"
+          const SDG_Filter = 'SDG 12: Responsible Consumption and Production'
   
         d3.csv(
           "Impact Startup Database - SDG Compass - Database.csv"
@@ -1687,13 +1688,16 @@
             })
 
             data = data.filter(function(v) {
-              return v['Primary SDG'] == 'SDG 12: Responsible Consumption and Production'
+              return v['Primary SDG'] == SDG_Filter
             })
 
             console.log('data', data)
 
 
             data.forEach(function(v) {
+              if (v['Circular Value Chain'] == 'Design') {
+                v['Circular Value Chain'] = 'Product Development'
+              }
               desc.forEach(function(w) {
                 if (w.SDG.toLowerCase() === v['Primary SDG'].toLowerCase()) {
                   v.desc = w.Description
@@ -3199,7 +3203,12 @@
                 );
               })
               .attr("fill", function(d) {
-                return colorScale(d.data.value.key)
+                if (state.level == 0) {
+                  return colorScale(d.data.value.key)
+                } else {
+                  console.log()
+                  return colorScale(SDG_Filter)
+                }
               })
               .each(function(d, i) {
                 var firstArcSection = /(^.+?)L/;
@@ -5343,7 +5352,13 @@
                 }
               d3.select("#opp-space-tooltip-container").style("display", "block")
               d3.select(".opp-space-tooltip-title").text((segment_data.data.value.key).toUpperCase().replace(/_/g, "/")).style("background-color", function() {
-                return colorScale(segment_data.data.value.key)
+                
+                if (state.level == 0) {
+                  return colorScale(segment_data.data.value.key)
+                } else {
+                  console.log()
+                  return colorScale(SDG_Filter)
+                }
               } )
               //desc
               d3.select(".opp-space-tooltip-desc").text(segmentDesc)
