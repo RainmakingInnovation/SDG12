@@ -1527,9 +1527,17 @@
           filterKey = "",
           clientFilter = "All Startups",
           geoFilter = "All Startups",
-          industryFilter = "All Startups",
-          innovationFilter = "All Startups",
-          filters = {type: "All Startups", geotype: "All Startups", industry: "All Startups", innovation: "All Statups"}
+          filters = {type: "All Startups", geotype: "All Startups", industry: "All Startups", innovation: "All Startups"}
+          definitions = {
+            'Product Development': "Creating circular product",
+            'Sourcing': "Sourcing sustainable and circular raw materials",
+            'Manufacturing': "Efficient production with reduced waste streams",
+            'Product Use': "Increasing product utilization and life cycles",
+            'End of life': "Recirculation at the products end of use / life",
+            'Reverse Logistics': "Efficient recovery and reintegration of products into the value chain.",
+            Logistics: "Efficient and sustainable downstream delivery"
+          }
+          console.log(definitions)
           logoPath = "assets/logo2.png",
           titleLogoWidth = 80,
           titleLogoHeight = 50,
@@ -1694,6 +1702,7 @@
         d3.csv(
           "Impact Startup Database - SDG Compass - Database.csv"
         ).then(function(data) {
+          console.log('data from import', data)
           d3.csv(
           "Impact Startup Database - SDG Compass - SDGs Helper.csv"
           ).then(function(desc) {
@@ -1701,6 +1710,8 @@
             data = data.filter(function(v) {
               return v['To Include'] == 'TRUE'
             })
+
+            console.log('data after filter', data)
 
             data = data.filter(function(v) {
               return v[Field] != ''
@@ -4000,8 +4011,11 @@
               .on("click", function(d) {
                 filters.industry = d
                 update_opacity();
-                industryFilter = d;
-                d3.select(".dropdown-industry").select(".dropbtn").html(d + " <i class='arrow down'> <\/i>")
+                if (d != "All Startups") {
+                  d3.select(".dropdown-industry").select(".dropbtn").html(d + " <i class='arrow down'> <\/i>")
+                } else {
+                  d3.select(".dropdown-industry").select(".dropbtn").html("Select Industry <i class='arrow down'> <\/i>")
+                }
               });
 
             var count_by_innovation = d3.nest()
@@ -4035,8 +4049,11 @@
               .on("click", function(d) {
                 filters.innovation = d
                 update_opacity();
-                innovationFilter = d;
-                d3.select(".dropdown-innovation").select(".dropbtn").html(d + " <i class='arrow down'> <\/i>")
+                if (d != "All Startups") {
+                  d3.select(".dropdown-innovation").select(".dropbtn").html(d + " <i class='arrow down'> <\/i>")
+                } else {
+                  d3.select(".dropdown-innovation").select(".dropbtn").html("Select Innovation <i class='arrow down'> <\/i>")
+                }
               });
 
   
@@ -4076,7 +4093,6 @@
             var CompetitorMode = 0;
 
             var radiusSize = 0.1;
-
   
             /* function keyMouseOver(data, type) {
                 nodes.attr("opacity", function(d) {
@@ -4511,8 +4527,8 @@
                 .attrTween("r", function(d) {
                   var startR = d3.select(this).attr("r");
                   if (
-                    (d["Industry"] === industryType || industryType === "All Startups") &&
-                    (d["Type of Innovation"] === innovationType || innovationType === "All Startups") &&
+                    (d["Industry"] == industryType || industryType == "All Startups") &&
+                    (d["Type of Innovation"] == innovationType || innovationType == "All Startups") &&
                     d["Funding Round"] !== "Acquired" &&
                     d.hide === false &&
                     (d["Global"] === geotype || geotype === "All Startups")
@@ -5257,7 +5273,6 @@
               if (type === "acquired") {
                 nodes_acquired.attr("opacity", 1);
                 nodes.attr("opacity", 0.3);
-                nodes_activity.attr("opacity", 0.3);
               }
               /* if (type === "size") {
                   nodes.attr("opacity", function(d) {
@@ -5277,7 +5292,6 @@
                     return 0.3;
                   }
                 });
-                nodes_acquired.attr("opacity", 0.3);
                 nodes_activity.attr("opacity", 0.3);
               }
   
@@ -5310,7 +5324,7 @@
             }
 
             function showOppSpaceTooltip(segment_data, clicked = "") {  
-              segmentDesc = ""            
+              /*segmentDesc = ""            
               desc.forEach(function(v) {
                 if (
                   segment_data.data.value.key ===
@@ -5318,7 +5332,8 @@
                 ) {
                   segmentDesc = v.Description;
                 }
-              });
+              });*/
+              segmentDesc = definitions[segment_data.data.value.key]
             var count = d3
               .nest()
               .key(function(d) {
@@ -5367,6 +5382,8 @@
                 }
               })
               )
+
+              console.log('count', count)
 
               var numberOfStartups = 0;
               var segmentFunding = 0;
