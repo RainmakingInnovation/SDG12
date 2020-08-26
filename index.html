@@ -1537,7 +1537,14 @@
             'Reverse Logistics': "Efficient recovery and reintegration of products into the value chain.",
             Logistics: "Efficient and sustainable downstream delivery"
           }
-          console.log(definitions)
+          field_order = [
+            "Product Development",
+            "Sourcing",
+            "Manufacturing",
+            "Product Use",
+            "End of Life",
+            "Reverse Logistics"
+          ]
           logoPath = "assets/logo2.png",
           titleLogoWidth = 80,
           titleLogoHeight = 50,
@@ -1715,6 +1722,10 @@
 
             data = data.filter(function(v) {
               return v[Field] != ''
+            })
+
+            data = data.filter(function(v) {
+              return v[Field] != 'Logistics'
             })
 
             data = data.filter(function(v) {
@@ -3065,9 +3076,12 @@
                     return v[Field]
                   })
                   .sortKeys(function(a, b) {
-                    return d3.ascending(a, b)
+                    var a_idx = field_order.indexOf(a)
+                    var b_idx = field_order.indexOf(b)
+                    return d3.ascending(a_idx, b_idx)
                   })
                   .entries(data) 
+                  console.log('nestField', nestField)
                 var drillSort = nestField.map(function(v) {
                   return v.key
                 })
